@@ -1,0 +1,63 @@
+@top Program { expression }
+
+@skip { space | LineComment }
+
+expression { Operator GenericExpression | Operand }
+
+
+GenericExpression { "(" commaExp ")" }
+
+commaExp { "" | expression ("," expression?)*}
+
+Operand { ( value | Entity | Entity "." Member | Entity "." Member prop) ~amb}
+
+Operator { op ~amb }
+
+op { identifier op | operatorToken op | identifier | operatorToken}
+
+Entity { en  ~amb ~ambEnMb}
+
+en { identifier en | identifier }
+
+Member { mb  ~ambEnMb}
+
+mb { identifier mb | identifier}
+
+prop { "" | ("." Property)+ }
+
+Property { pr }
+
+pr { identifier pr | identifier }
+
+value { String | Number }
+
+@tokens {
+
+  identifier { $[A-zÀ-ú]+$[\s]*($[A-zÀ-ú0-9]|$[\s])* }
+
+  Number {
+    (@digit ("_" | @digit)* ("." ("_" | @digit)*)? | "." @digit ("_" | @digit)*)
+      (("e" | "E") ("+" | "-")? ("_" | @digit)+)? |
+    @digit ("_" | @digit)* "n" |
+    "0x" (@digit | $[a-fA-F] | "_")+ "n"? |
+    "0b" $[01_]+ "n"? |
+    "0o" $[0-7_]+ "n"?
+  }
+
+  String {
+    '"' (![\\\n"] | "\\" _)* '"'? |
+    "'" (![\\\n'] | "\\" _)* "'"?
+  }
+
+
+  operatorToken { $[+*/%:=-]+ }
+
+  "(" ")"
+
+  LineComment { "#" ![\n]* }
+
+  space { $[ \t\n\r]+ }
+
+}
+
+@detectDelim
